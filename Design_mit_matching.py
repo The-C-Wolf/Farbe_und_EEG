@@ -330,7 +330,7 @@ core.wait(2)
 ############# Farbe einzeln mit Freitext-Wort-Assoziationen
 
 event.clearEvents()
-messages = ['Du siehst gleich jeweils eine Farbe. Gib Wörter (mind. drei, getrennt mit einem Komma) an, die du mit dieser Farbe assoziierst. Gib dann an, wie gut das entsprechende Wort zu der Farbe passt!']
+messages = ['Du siehst gleich jeweils eine Farbe. Gib Wörter (mind. zwei Assoziationen, getrennt mit einem Komma) an, die du mit dieser Farbe assoziierst. Gib dann an, wie gut das entsprechende Wort zu der Farbe passt!']
 showText(messages)
 
 assoziationsdict = {}
@@ -416,7 +416,7 @@ wortliste = []
 for i in list(assoziationsdict.values()):
     wortliste += i.strip('\'').strip().split(',')
 
-#shuffle(wortliste)
+shuffle(wortliste)
 #print(wortliste)
 
 ratingdict = {}
