@@ -58,7 +58,7 @@ class RatingSkala15:
         self.text = visual.TextStim(win, units="pix", text=wort, height= 30, color=(-1,-1,-1), pos=(0,0))
         self.schriftlinks = visual.TextStim(win, units="pix", text='gering assoziativ', height= 10, color=(-1,-1,-1), pos=(-150,-200))
         self.schriftrechts = visual.TextStim(win, units="pix", text='hoch assoziativ', height= 10, color=(-1,-1,-1), pos=(150,-200))
-        self.color = visual.ImageStim(win, units="pix", image = color+'25.png', pos = (0,150))
+        self.color = visual.ImageStim(win, units="pix", image = color+'25.png', pos = (0,200))
     def draw(self):
         enter = False
         pfeilpos = -120
@@ -214,6 +214,8 @@ event.clearEvents()
 messages = ['Willkommen zum Experiment "Farbe und EEG"! Bei Textanweisungen geht es immer Weiter mit beliebiger Taste!', 'Im Folgenden siehst du jeweils eine Farbtafel auf dem Bildschirm. \n Schau dir diese nacheinander an!']
 showText(messages)
 
+
+'''
 ############################### Teil 1: EInzel-Farbtafeln
 
 #Liste zum Speichern der Reihenfolge
@@ -325,7 +327,7 @@ book.save(ok_data[0]+'_Data.xlsx')
 
 win.flip()
 core.wait(2)
-
+'''
 
 ############# Farbe einzeln mit Freitext-Wort-Assoziationen
 
@@ -334,6 +336,7 @@ messages = ['Du siehst gleich jeweils eine Farbe. Gib Wörter (mind. zwei Assozi
 showText(messages)
 
 assoziationsdict = {}
+mouse = event.Mouse(visible = True)
 
 keydict = {'comma':','}
 event.clearEvents()
@@ -345,13 +348,16 @@ for color in colorlist:
     ansKeys = [ 'return']
     keyboardKeys = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','ä', 'ö', 'ü', 'ß']
     answer = ''
-
     x = True
     while x == True:
         instruction.setText(u'{0}'.format(answer))
         instruction.draw()
-        pic.pos = (0,150)
+        pic.pos = (0,200)
         pic.draw()
+        button = visual.Rect(win, units="pix", width=50, height=50, pos = (450,0), name = 'button')
+        button.draw()
+        buttonpic = visual.ImageStim(win, units="pix", image = 'button50.jpg', pos = (450,0))
+        buttonpic.draw()
         win.flip()
         # get some keys.
         for letter in (keyboardKeys):
@@ -371,7 +377,8 @@ for color in colorlist:
         if event.getKeys([quitKeys[0]]):
             core.quit()
 
-        if event.getKeys([ansKeys[0]]):
+        #if event.getKeys([ansKeys[0]]):
+        if mouse.isPressedIn(button):
             break
     assoziationsdict[color] = answer
     wörter = []
