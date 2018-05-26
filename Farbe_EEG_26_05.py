@@ -263,7 +263,7 @@ win.size = [1366,768]
 mouse = event.Mouse(visible = False)
 win.flip()
 
-
+'''
 
 #Startnachrichten
 event.clearEvents()
@@ -415,7 +415,7 @@ book.save(ok_data[0]+'_Data.xlsx')
 win.flip()
 core.wait(2)
 
-
+'''
 ############# Farbe einzeln mit Freitext-Wort-Assoziationen
 
 event.clearEvents()
@@ -424,8 +424,81 @@ showText(messages)
 
 assoziationsdict = {}
 mouse = event.Mouse(visible = True)
+übungslist = ['grey']
 
-keydict = {'comma':','}
+#Übungsdurchgang:
+for color in übungslist:
+    event.clearEvents()
+    showWhitescreen(0.5)
+    pic = visual.ImageStim(win, units="pix", image = color+'25.png')
+    instruction = visual.TextStim(win ,color="black")
+    quitKeys = ['escape', 'esc']
+    ansKeys = [ 'delete']
+    keyboardKeys = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','ä', 'ö', 'ü', 'ß']
+    keydict = {'comma':','}
+    answer = ''
+    x = True
+    while x == True:
+        instruction.setText(u'{0}'.format(answer))
+        instruction.draw()
+        pic.pos = (0,200)
+        pic.draw()
+        #button = visual.Rect(win, units="pix", width=50, height=50, pos = (450,0), name = 'button')
+        #button.draw()
+        #buttonpic = visual.ImageStim(win, units="pix", image = 'button50.jpg', pos = (450,0))
+        #buttonpic.draw()
+        win.flip()
+        # get some keys.
+        for letter in (keyboardKeys):
+            if event.getKeys([letter]):
+                answer += letter
+
+        if event.getKeys(['backspace']):
+            answer = answer[:-1]
+
+        if event.getKeys(['space']):
+            answer += ' '
+
+        for letter in (keydict.keys()):
+                if event.getKeys([letter]):
+                    answer += keydict[letter]
+
+        if event.getKeys([quitKeys[0]]):
+            core.quit()
+
+        if event.getKeys([ansKeys[0]]): #####Eingabetaste wählen
+            break
+        #if mouse.isPressedIn(button):
+        #    break
+    assoziationsdict[color] = answer
+    wörter = []
+    wörter += answer.strip('\'').strip().split(',')
+    matchratingdict = {}
+    enter = False
+    for wort in wörter:
+        event.clearEvents()
+        rate = RatingSkala15(win, wort, color)
+        rate.draw()
+        matchratingdict[wort] = rate.getRating()
+    #print(matchratingdict)
+    win.flip()
+    ######speichere matching-ratings
+    book = openpyxl.load_workbook(ok_data[0]+'_Data.xlsx')
+    sheet = book['Data Sheet']
+    c = sheet.max_column
+    assiwörter = list(matchratingdict.keys())
+    for i in range(len(list(matchratingdict.keys()))):
+        sheet.cell(row=1, column=c+1+i).value = assiwörter[i]+'_'+color+'_matching'
+        sheet.cell(row=2, column=c+1+i).value = matchratingdict[assiwörter[i]]
+    book.save(ok_data[0]+'_Data.xlsx')
+
+
+event.clearEvents()
+messages = ['Dies war ein Testdurchgang, nun geht es los!']
+showText(messages)
+
+
+assoziationsdict = {}
 for color in colorlist:
     event.clearEvents()
     showWhitescreen(0.5)
@@ -434,6 +507,7 @@ for color in colorlist:
     quitKeys = ['escape', 'esc']
     ansKeys = [ 'delete']
     keyboardKeys = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','ä', 'ö', 'ü', 'ß']
+    keydict = {'comma':','}
     answer = ''
     x = True
     while x == True:
@@ -472,9 +546,9 @@ for color in colorlist:
     wörter = []
     wörter += answer.strip('\'').strip().split(',')
     matchratingdict = {}
-    event.clearEvents()
     enter = False
     for wort in wörter:
+        event.clearEvents()
         rate = RatingSkala15(win, wort, color)
         rate.draw()
         matchratingdict[wort] = rate.getRating()
