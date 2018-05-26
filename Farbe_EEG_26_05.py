@@ -443,10 +443,6 @@ for color in übungslist:
         instruction.draw()
         pic.pos = (0,200)
         pic.draw()
-        #button = visual.Rect(win, units="pix", width=50, height=50, pos = (450,0), name = 'button')
-        #button.draw()
-        #buttonpic = visual.ImageStim(win, units="pix", image = 'button50.jpg', pos = (450,0))
-        #buttonpic.draw()
         win.flip()
         # get some keys.
         for letter in (keyboardKeys):
@@ -468,8 +464,6 @@ for color in übungslist:
 
         if event.getKeys([ansKeys[0]]): #####Eingabetaste wählen
             break
-        #if mouse.isPressedIn(button):
-        #    break
     assoziationsdict[color] = answer
     wörter = []
     wörter += answer.strip('\'').strip().split(',')
@@ -515,10 +509,10 @@ for color in colorlist:
         instruction.draw()
         pic.pos = (0,200)
         pic.draw()
-        button = visual.Rect(win, units="pix", width=50, height=50, pos = (450,0), name = 'button')
-        button.draw()
-        buttonpic = visual.ImageStim(win, units="pix", image = 'button50.jpg', pos = (450,0))
-        buttonpic.draw()
+        #button = visual.Rect(win, units="pix", width=50, height=50, pos = (450,0), name = 'button')
+        #button.draw()
+        #buttonpic = visual.ImageStim(win, units="pix", image = 'button50.jpg', pos = (450,0))
+        #buttonpic.draw()
         win.flip()
         # get some keys.
         for letter in (keyboardKeys):
@@ -540,8 +534,8 @@ for color in colorlist:
 
         if event.getKeys([ansKeys[0]]): #####Eingabetaste wählen
             break
-        if mouse.isPressedIn(button):
-            break
+        #if mouse.isPressedIn(button):
+        #    break
     assoziationsdict[color] = answer
     wörter = []
     wörter += answer.strip('\'').strip().split(',')
