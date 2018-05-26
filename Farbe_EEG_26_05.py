@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from psychopy import visual, core, event, gui
+from psychopy import visual, core, event, gui, parallel
 import itertools, csv, time, openpyxl
 from random import shuffle
 import pandas as pd
@@ -219,6 +219,11 @@ for i in range(len(ok_data)):
     sheet.cell(row=2, column=c+i).value = ok_data[i]
 book.save(ok_data[0]+'_Data.xlsx')
 
+
+#ParallelPort Adresse und einmal auf 0 setzen
+port = parallel.ParallelPort(address = 0x0378)
+port.setData(0)
+
 #Fenster erstellen
 win = visual.Window(size=[1200,600], color= (1,1,1), monitor="testMonitor", units="deg") #spaeter evtl. fullscr=True // size=[1200,600]
 anfangszeit = time.time()
@@ -236,7 +241,7 @@ colorlist = ['green','blue','red','purple','orange','yellow', 'cyan',
 
 shuffle(colorlist)
 
-colors = colorlist *1
+colors = colorlist *3
 shuffle(colors)
 
 
@@ -263,36 +268,44 @@ win.size = [1366,768]
 mouse = event.Mouse(visible = False)
 win.flip()
 
-'''
 
-#Startnachrichten
+#Start des Experiments ##############################################################################################################################
+trigger = 1
+port.setData(trigger)
 event.clearEvents()
 messages = ['Willkommen zum Experiment "Farbe und EEG"!', 'Betrachte zunächst einfach nur die folgenden Farbtafeln auf dem Bildschirm.']
 showText(messages)
 
-#parallel.setData(0)
-############################### Teil 1: EInzel-Farbtafeln
+#Block 1: Einzel-Farben im EEG ################################################################
+trigger = 2
+port.setData(trigger)
 
-#Liste zum Speichern der Reihenfolge
-#farbreihenfolge = []
 for color in colors:
     showFixation(0.2)
     img = visual.ImageStim(win, units="pix",image = color+'5.png', pos = (0,0))
     img.draw()
     win.flip()
-    #parallel.setData(Farbzahl)
+    trigger += 1
+    port.setData(trigger)
     ######hier EEG Trigger
     core.wait(0.5) #Triallänge
-    #parallel.setData(0)
+    port.setData(0)
 
-showFixation(0.5)
+showWhitescreen(0.5)
 
+trigger += 1
+port.setData(trigger)
+print ('Ende Block 1, Trigger = {}'.format(trigger))
 
 ####Zweiter Teil: subjektive Farbpräferenzratings
 
 event.clearEvents()
 messages = ['Gib nun an, ob du die jeweilige Farbe als eher angenehm oder unangehm empfindest!']
 showText(messages)
+
+# Block 2 #######################################################################################################
+trigger = 50
+port.setData(trigger)
 
 farbratingdict = {}
 event.clearEvents()
@@ -301,8 +314,15 @@ for color in colorlist:
     showWhitescreen(0.5)
     colorpreference = ColorPreference(win, color)
     colorpreference.draw()
+    trigger += 1
+    port.setData(trigger)
     farbratingdict[color] = colorpreference.getRating()
     win.flip()
+    port.setData(0)
+
+trigger += 1
+port.setData(trigger)
+print ('Ende Block 2, Trigger = {}'.format(trigger))
 
 ######speichere Ratings
 book = openpyxl.load_workbook(ok_data[0]+'_Data.xlsx')
@@ -322,7 +342,11 @@ messages = ['Wähle nun drei Farben aus, die dir am angenehmsten sind!']
 showText(messages)
 mouse = event.Mouse(visible = True)
 win.flip()
-#Ergebnisliste
+
+#Block 3 ###########################################################################################
+trigger = 70
+port.setData(trigger)
+
 vorzug = []
 ablehn = []
 x = False
@@ -341,13 +365,13 @@ while x == False:
     core.wait(0.01) ###### bei Fehler evtl Zeit hoch setzen zB 0.1
     if fertig > 300: ##### Endzeit ist ungefähr Wert/100 Sekunden
         x = True
-
-#print(vorzug)
-#print(res)
-#print(farbendict)
-
 win.flip()
 core.wait(2)
+
+trigger += 1
+port.setData(trigger)
+print ('Ende Block 3, Trigger = {}'.format(trigger))
+
 ######speichere Vorzugsfarben
 book = openpyxl.load_workbook(ok_data[0]+'_Data.xlsx')
 sheet = book['Data Sheet']
@@ -368,7 +392,9 @@ showText(messages)
 
 
 # Teil 3: Ablehnfarbe
-
+# Block 4 ######################################################################################################
+trigger = 80
+port.setData(trigger)
 
 shuffle(position)
 farbendict = {'green': (position[0], True), 'red': (position[1], True), 'blue': (position[2], True),'purple': (position[3], True),
@@ -394,10 +420,9 @@ while x == False:
     if fertig > 300: ##### Endzeit ist ungefähr Wert/100 Sekunden
         x = True
 
-
-#print(ablehn)
-#print(res)
-#print(farbendict)
+trigger += 1
+port.setData(trigger)
+print ('Ende Block 4, Trigger = {}'.format(trigger))
 
 ######speichere Ablehnfarben
 book = openpyxl.load_workbook(ok_data[0]+'_Data.xlsx')
@@ -415,18 +440,22 @@ book.save(ok_data[0]+'_Data.xlsx')
 win.flip()
 core.wait(2)
 
-'''
+
 ############# Farbe einzeln mit Freitext-Wort-Assoziationen
 
 event.clearEvents()
 messages = ['Gib nun jeweils mindestens zwei Wörter an, die du spontan mit der präsentierten Farbe assoziierst (trenne die Wörter durch ein Komma). \n Beurteile anschließend, wie gut diese Assoziation zur Farbe passt!']
 showText(messages)
-
 assoziationsdict = {}
 mouse = event.Mouse(visible = True)
 übungslist = ['grey']
 
-#Übungsdurchgang:
+
+
+#Übungsdurchgang #############################
+trigger = 90
+port.setData(trigger)
+
 for color in übungslist:
     event.clearEvents()
     showWhitescreen(0.5)
@@ -448,49 +477,38 @@ for color in übungslist:
         for letter in (keyboardKeys):
             if event.getKeys([letter]):
                 answer += letter
-
         if event.getKeys(['backspace']):
             answer = answer[:-1]
-
         if event.getKeys(['space']):
             answer += ' '
-
         for letter in (keydict.keys()):
                 if event.getKeys([letter]):
                     answer += keydict[letter]
-
         if event.getKeys([quitKeys[0]]):
             core.quit()
-
         if event.getKeys([ansKeys[0]]): #####Eingabetaste wählen
             break
     assoziationsdict[color] = answer
     wörter = []
     wörter += answer.strip('\'').strip().split(',')
-    matchratingdict = {}
     enter = False
     for wort in wörter:
         event.clearEvents()
         rate = RatingSkala15(win, wort, color)
         rate.draw()
-        matchratingdict[wort] = rate.getRating()
-    #print(matchratingdict)
     win.flip()
-    ######speichere matching-ratings
-    book = openpyxl.load_workbook(ok_data[0]+'_Data.xlsx')
-    sheet = book['Data Sheet']
-    c = sheet.max_column
-    assiwörter = list(matchratingdict.keys())
-    for i in range(len(list(matchratingdict.keys()))):
-        sheet.cell(row=1, column=c+1+i).value = assiwörter[i]+'_'+color+'_matching'
-        sheet.cell(row=2, column=c+1+i).value = matchratingdict[assiwörter[i]]
-    book.save(ok_data[0]+'_Data.xlsx')
 
+trigger += 1
+port.setData(trigger)
+print ('Ende Übungsblock, Trigger = {}'.format(trigger))
 
 event.clearEvents()
 messages = ['Dies war ein Testdurchgang, nun geht es los!']
 showText(messages)
 
+#Block 5 #################################################################################
+trigger = 100
+port.setData(trigger)
 
 assoziationsdict = {}
 for color in colorlist:
@@ -503,6 +521,7 @@ for color in colorlist:
     keyboardKeys = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','ä', 'ö', 'ü', 'ß']
     keydict = {'comma':','}
     answer = ''
+    trigger +=1
     x = True
     while x == True:
         instruction.setText(u'{0}'.format(answer))
@@ -514,24 +533,20 @@ for color in colorlist:
         #buttonpic = visual.ImageStim(win, units="pix", image = 'button50.jpg', pos = (450,0))
         #buttonpic.draw()
         win.flip()
+        port.setData(trigger)
         # get some keys.
         for letter in (keyboardKeys):
             if event.getKeys([letter]):
                 answer += letter
-
         if event.getKeys(['backspace']):
             answer = answer[:-1]
-
         if event.getKeys(['space']):
             answer += ' '
-
         for letter in (keydict.keys()):
                 if event.getKeys([letter]):
                     answer += keydict[letter]
-
         if event.getKeys([quitKeys[0]]):
             core.quit()
-
         if event.getKeys([ansKeys[0]]): #####Eingabetaste wählen
             break
         #if mouse.isPressedIn(button):
@@ -548,6 +563,7 @@ for color in colorlist:
         matchratingdict[wort] = rate.getRating()
     #print(matchratingdict)
     win.flip()
+    port.setData(0)
     ######speichere matching-ratings
     book = openpyxl.load_workbook(ok_data[0]+'_Data.xlsx')
     sheet = book['Data Sheet']
@@ -558,6 +574,9 @@ for color in colorlist:
         sheet.cell(row=2, column=c+1+i).value = matchratingdict[assiwörter[i]]
     book.save(ok_data[0]+'_Data.xlsx')
 
+trigger += 1
+port.setData(trigger)
+print ('Ende Block 5, Trigger = {}'.format(trigger))
 
 #Schleife zum Testen, wie die Tasten heissen
 '''for i in range(4):
@@ -581,23 +600,31 @@ event.clearEvents()
 messages = ['Beurteile nun, wie sehr du die jeweilige Assoziation magst!']
 showText(messages)
 
-wortliste = []
+# Block 6 #######################################################################################
 
+trigger = 110
+port.setData(trigger)
+
+wortliste = []
 for i in list(assoziationsdict.values()):
     wortliste += i.strip('\'').strip().split(',')
-
 shuffle(wortliste)
 ratingdict = {}
-
 event.clearEvents()
-
 enter = False
 for wort in wortliste:
     showWhitescreen(0.5)
     rate = RatingSkala(win, wort)
     rate.draw()
+    trigger += 1
+    port.setData(trigger)
     ratingdict[wort] = rate.getRating()
     win.flip()
+    port.setData(0)
+
+trigger += 1
+port.setData(trigger)
+print ('Ende Block 6, Trigger = {}'.format(trigger))
 
 ######speichere Ratings
 book = openpyxl.load_workbook(ok_data[0]+'_Data.xlsx')
@@ -617,6 +644,10 @@ showText(["Beenden mit beliebiger Taste"])
 endzeit = time.time()
 dauer = endzeit - anfangszeit
 print('Versuchsdauer: {}'.format(dauer))
+
+trigger = 255
+port.setData(trigger)
+print ('Ende Experiment, Trigger = {}'.format(trigger))
 
 # Fenster und PsychoPy schliessen
 win.close()
