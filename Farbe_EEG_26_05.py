@@ -172,12 +172,14 @@ class ClickColor:
 def showText(messages): 
     
     for message in messages:
-        c = None
-        while c == None:
-            text = visual.TextStim(win, text=message, wrapWidth = 30, color=(-1,-1,-1), pos = (0,0))
+        c = True
+        while c:
+            text = visual.TextStim(win, text=message, alignHoriz = 'center',  wrapWidth = 30, color=(-1,-1,-1), pos = (0,0))
             text.draw()
             win.flip()
-            c = event.waitKeys()
+            #c = event.waitKeys()
+            if event.getKeys(['space']): #####Eingabetaste wählen
+                break
 
 def showFixation(timetowait):
     fixation = visual.ShapeStim(win, vertices=((0, -0.4), (0, 0.4), (0,0), (-0.4,0), (0.4, 0)), lineWidth=2, closeShape=False,lineColor="black")
@@ -268,17 +270,20 @@ win.size = [1366,768]
 mouse = event.Mouse(visible = False)
 win.flip()
 
+triggerdict = {}
 
 #Start des Experiments ##############################################################################################################################
 trigger = 1
 port.setData(trigger)
+triggerdict[trigger] = 'Beginn des Experiments'
 event.clearEvents()
-messages = ['Willkommen zum Experiment "Farbe und EEG"!', 'Betrachte zunächst einfach nur die folgenden Farbtafeln auf dem Bildschirm.']
+messages = ['Willkommen zum Experiment "Farbe und EEG"! \n\n (weiter mit Leertaste)', 'Betrachte zunächst einfach nur die folgenden Farbtafeln auf dem Bildschirm.\n\n (weiter mit Leertaste)']
 showText(messages)
 
 #Block 1: Einzel-Farben im EEG ################################################################
 trigger = 2
 port.setData(trigger)
+triggerdict[trigger] = 'Block 1: Farben im EEG'
 
 for color in colors:
     showFixation(0.2)
@@ -287,6 +292,7 @@ for color in colors:
     win.flip()
     trigger += 1
     port.setData(trigger)
+    triggerdict[trigger] = color
     ######hier EEG Trigger
     core.wait(0.5) #Triallänge
     port.setData(0)
@@ -295,17 +301,19 @@ showWhitescreen(0.5)
 
 trigger += 1
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Block 1'
 print ('Ende Block 1, Trigger = {}'.format(trigger))
 
 ####Zweiter Teil: subjektive Farbpräferenzratings
 
 event.clearEvents()
-messages = ['Gib nun an, ob du die jeweilige Farbe als eher angenehm oder unangehm empfindest!']
+messages = ['Gib nun an, ob du die jeweilige Farbe als eher angenehm oder unangehm empfindest!\n\n (weiter mit Leertaste)']
 showText(messages)
 
 # Block 2 #######################################################################################################
 trigger = 50
 port.setData(trigger)
+triggerdict[trigger] = 'Block 2: Farbpräferenzen'
 
 farbratingdict = {}
 event.clearEvents()
@@ -316,12 +324,14 @@ for color in colorlist:
     colorpreference.draw()
     trigger += 1
     port.setData(trigger)
+    triggerdict[trigger] = color
     farbratingdict[color] = colorpreference.getRating()
     win.flip()
     port.setData(0)
 
 trigger += 1
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Block 2'
 print ('Ende Block 2, Trigger = {}'.format(trigger))
 
 ######speichere Ratings
@@ -338,7 +348,7 @@ book.save(ok_data[0]+'_Data.xlsx')
 ########################################## Teil 3: Vorzugsfarben
 
 event.clearEvents()
-messages = ['Wähle nun drei Farben aus, die dir am angenehmsten sind!']
+messages = ['Wähle nun drei Farben aus, die dir am angenehmsten sind!\n\n (weiter mit Leertaste)']
 showText(messages)
 mouse = event.Mouse(visible = True)
 win.flip()
@@ -346,6 +356,7 @@ win.flip()
 #Block 3 ###########################################################################################
 trigger = 70
 port.setData(trigger)
+triggerdict[trigger] = 'Block 3: Vorzugsfarben'
 
 vorzug = []
 ablehn = []
@@ -370,6 +381,7 @@ core.wait(2)
 
 trigger += 1
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Block 3'
 print ('Ende Block 3, Trigger = {}'.format(trigger))
 
 ######speichere Vorzugsfarben
@@ -387,7 +399,7 @@ book.save(ok_data[0]+'_Data.xlsx')
 
 
 event.clearEvents()
-messages = ['Wähle nun zwei Farben aus, die dir am Wenigsten gefallen!']
+messages = ['Wähle nun zwei Farben aus, die dir am Wenigsten gefallen!\n\n (weiter mit Leertaste)']
 showText(messages)
 
 
@@ -395,6 +407,7 @@ showText(messages)
 # Block 4 ######################################################################################################
 trigger = 80
 port.setData(trigger)
+triggerdict[trigger] = 'Block 4: Ablehnfarben'
 
 shuffle(position)
 farbendict = {'green': (position[0], True), 'red': (position[1], True), 'blue': (position[2], True),'purple': (position[3], True),
@@ -422,6 +435,7 @@ while x == False:
 
 trigger += 1
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Block 4'
 print ('Ende Block 4, Trigger = {}'.format(trigger))
 
 ######speichere Ablehnfarben
@@ -444,7 +458,7 @@ core.wait(2)
 ############# Farbe einzeln mit Freitext-Wort-Assoziationen
 
 event.clearEvents()
-messages = ['Gib nun jeweils mindestens zwei Wörter an, die du spontan mit der präsentierten Farbe assoziierst (trenne die Wörter durch ein Komma). \n Beurteile anschließend, wie gut diese Assoziation zur Farbe passt!']
+messages = ['Gib nun jeweils mindestens zwei Wörter an, \n die du spontan mit der präsentierten Farbe assoziierst \n(trenne die Wörter durch ein Komma). \n Beurteile anschließend, wie gut diese Assoziation zur Farbe passt!\n\n (weiter mit Leertaste)', 'Zunächst ein Testdurchgang! \n\n (weiter mit Leertaste)']
 showText(messages)
 assoziationsdict = {}
 mouse = event.Mouse(visible = True)
@@ -455,6 +469,7 @@ mouse = event.Mouse(visible = True)
 #Übungsdurchgang #############################
 trigger = 90
 port.setData(trigger)
+triggerdict[trigger] = 'Übungsdurchgang Assoziation'
 
 for color in übungslist:
     event.clearEvents()
@@ -500,15 +515,17 @@ for color in übungslist:
 
 trigger += 1
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Übungsdurchgang'
 print ('Ende Übungsblock, Trigger = {}'.format(trigger))
 
 event.clearEvents()
-messages = ['Dies war ein Testdurchgang, nun geht es los!']
+messages = ['Nun geht es los!\n\n (weiter mit Leertaste)']
 showText(messages)
 
 #Block 5 #################################################################################
 trigger = 100
 port.setData(trigger)
+triggerdict[trigger] = 'Block 5: Assoziation'
 
 assoziationsdict = {}
 for color in colorlist:
@@ -534,6 +551,7 @@ for color in colorlist:
         #buttonpic.draw()
         win.flip()
         port.setData(trigger)
+        triggerdict[trigger] = color
         # get some keys.
         for letter in (keyboardKeys):
             if event.getKeys([letter]):
@@ -576,6 +594,7 @@ for color in colorlist:
 
 trigger += 1
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Block 5'
 print ('Ende Block 5, Trigger = {}'.format(trigger))
 
 #Schleife zum Testen, wie die Tasten heissen
@@ -597,13 +616,14 @@ book.save(ok_data[0]+'_Data.xlsx')
 ####Letzter Teil: Wortrating
 
 event.clearEvents()
-messages = ['Beurteile nun, wie sehr du die jeweilige Assoziation magst!']
+messages = ['Beurteile nun, wie sehr du die jeweilige Assoziation magst!\n\n (weiter mit Leertaste)']
 showText(messages)
 
 # Block 6 #######################################################################################
 
 trigger = 110
 port.setData(trigger)
+triggerdict[trigger] = 'Block 6: Wortrating'
 
 wortliste = []
 for i in list(assoziationsdict.values()):
@@ -618,12 +638,14 @@ for wort in wortliste:
     rate.draw()
     trigger += 1
     port.setData(trigger)
+    triggerdict[trigger] = 'wort'
     ratingdict[wort] = rate.getRating()
     win.flip()
     port.setData(0)
 
 trigger += 1
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Block 6'
 print ('Ende Block 6, Trigger = {}'.format(trigger))
 
 ######speichere Ratings
@@ -639,7 +661,8 @@ book.save(ok_data[0]+'_Data.xlsx')
 #Warteschleifenloop, bis Ende auf Tastendruck
 #c =None
 #while c==None:
-showText(["Beenden mit beliebiger Taste"])
+message = ['Vielen Dank für deine Teilnahme! \n\n (Beenden mit Leertaste)']
+showText(message)
 #c = event.waitKeys()
 endzeit = time.time()
 dauer = endzeit - anfangszeit
@@ -647,7 +670,14 @@ print('Versuchsdauer: {}'.format(dauer))
 
 trigger = 255
 port.setData(trigger)
+triggerdict[trigger] = 'Ende Experiment'
 print ('Ende Experiment, Trigger = {}'.format(trigger))
+
+print(triggerdict)
+np.save(ok_data[0]+'triggerdict.npy', triggerdict)
+
+#load
+'''read_triggerdict = np.load('filename.npy').item()'''
 
 # Fenster und PsychoPy schliessen
 win.close()
